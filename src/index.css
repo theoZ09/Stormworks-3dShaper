@@ -1,0 +1,114 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-inset: var(--surface-inset);
+  --color-surface-panel: var(--surface-panel);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+:root {
+  --surface: #e8e8e8;
+  --surface-elevated: #f0f0f0;
+  --surface-inset: #d8d8d8;
+  --surface-panel: #ececec;
+  --border: #b0b0b0;
+  --border-subtle: #c8c8c8;
+  --text: #1a1a1a;
+  --text-muted: #5c5c5c;
+  --accent: #0066cc;
+  --accent-muted: #0052a3;
+  --grid-bg: #d0d0d0;
+  --grid-line: #a8a8a8;
+  --grid-meter-line: #888888;
+  --grid-cell-fill: #0d9488;
+  --grid-cell-stroke: #0f766e;
+  --grid-wedge-fill: #14b8a6;
+  --grid-wedge-stroke: #0d9488;
+  --grid-wedge-preview-fill: rgba(20, 184, 166, 0.3);
+  --grid-wedge-preview-stroke: #14b8a6;
+  --grid-invalid-preview-fill: rgba(239, 68, 68, 0.3);
+  --grid-invalid-preview-stroke: #ef4444;
+  --grid-symmetry-line: #0066cc;
+  --grid-reference-line: #c45c00;
+  --grid-axis-label: #555555;
+}
+
+.dark {
+  --surface: #2a2a2a;
+  --surface-elevated: #333333;
+  --surface-inset: #222222;
+  --surface-panel: #2e2e2e;
+  --border: #4a4a4a;
+  --border-subtle: #3a3a3a;
+  --text: #e8e8e8;
+  --text-muted: #9a9a9a;
+  --accent: #3d8fd9;
+  --accent-muted: #2a7bc4;
+  --grid-bg: #1e1e1e;
+  --grid-line: #3a3a3a;
+  --grid-meter-line: #555555;
+  --grid-cell-fill: #0d9488;
+  --grid-cell-stroke: #0f766e;
+  --grid-wedge-fill: #14b8a6;
+  --grid-wedge-stroke: #0d9488;
+  --grid-wedge-preview-fill: rgba(20, 184, 166, 0.25);
+  --grid-wedge-preview-stroke: #5eead4;
+  --grid-invalid-preview-fill: rgba(239, 68, 68, 0.25);
+  --grid-invalid-preview-stroke: #f87171;
+  --grid-symmetry-line: #3d8fd9;
+  --grid-reference-line: #e67e22;
+  --grid-axis-label: #888888;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.panel-header {
+  @apply border-b border-border-subtle px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted;
+}
+
+.tool-btn {
+  @apply flex w-full items-center gap-2 rounded-sm border border-transparent px-2 py-1.5 text-left text-xs text-text-muted transition-colors hover:bg-surface-inset hover:text-text;
+}
+
+.tool-btn-active {
+  @apply border-border-subtle bg-surface-inset text-text;
+}
+
+.inspector-tab {
+  @apply flex-1 border-b-2 border-transparent px-2 py-2 text-center text-[10px] font-medium uppercase tracking-wide text-text-muted transition-colors hover:text-text;
+}
+
+.inspector-tab-active {
+  @apply border-accent text-text;
+}
+
+.continue-option {
+  @apply block w-full rounded-sm border border-border-subtle bg-surface-elevated p-2 text-left transition-colors hover:border-border;
+}
+
+.continue-option-active {
+  @apply border-accent bg-accent/10;
+}
+
+.toggle-row {
+  @apply flex items-center justify-between gap-2 py-1.5 text-xs;
+}
