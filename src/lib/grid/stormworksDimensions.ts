@@ -1,6 +1,6 @@
 export const BLOCK_SIZE_M = 0.25
 export const GRID_DIM_MIN = 8
-export const GRID_DIM_MAX = 128
+export const GRID_DIM_MAX = 1024
 
 export type BeamParity = 'odd' | 'even'
 

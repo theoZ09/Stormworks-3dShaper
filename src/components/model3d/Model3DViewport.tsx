@@ -3,13 +3,12 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { BLOCK_SIZE_M } from '../../lib/grid/stormworksDimensions'
 import {
-  alignmentOffsetToWorld,
+  applyModelWrapperTransform,
   buildStormworksHullVisuals,
-  detectModelLengthAxis,
+  captureBaseFootprintM,
   disposeHullVisuals,
   fitModelToStormworksEnvelope,
   hullMetersFromStore,
-  modelBeamToLengthRatio,
   type ModelLengthAxis,
 } from '../../lib/model3d/hullAlignment'
 import { setModelPreviewTransparency } from '../../lib/model3d/modelTransparency'
@@ -100,15 +99,36 @@ function updateVoxelPreview(
   }
 }
 
-function applyWrapperOffset(api: SceneApi): void {
+function applyWrapperTransform(api: SceneApi): void {
   if (!api.modelWrapper) return
-  const { modelAlignmentOffset, modelLengthAxis } = useHullStore.getState()
-  const world = alignmentOffsetToWorld(modelAlignmentOffset, modelLengthAxis)
-  api.modelWrapper.position.copy(world)
+  const { modelAlignmentOffset, modelAlignmentRotation, modelLengthAxis } =
+    useHullStore.getState()
+  applyModelWrapperTransform(
+    api.modelWrapper,
+    modelAlignmentOffset,
+    modelAlignmentRotation,
+    modelLengthAxis,
+  )
+}
+
+function refreshReferenceModelFromUpAxis(api: SceneApi): void {
+  if (!api.loadedModel) return
+  const store = useHullStore.getState()
+  if (!store.baseFootprintM) return
+
+  const { lengthAxis, footprint } = captureBaseFootprintM(api.loadedModel, store.modelUpAxis)
+  const ratio = footprint.length > 1e-6 ? footprint.beam / footprint.length : 1
+
+  store.setModelLengthAxis(lengthAxis)
+  store.setBaseFootprintM(footprint)
+  store.setReferenceBeamToLengthRatio(ratio)
+  store.syncReferenceModelEnvelope()
 }
 
 function refitLoadedModel(api: SceneApi): void {
   if (!api.loadedModel) return
+
+  refreshReferenceModelFromUpAxis(api)
 
   const state = useHullStore.getState()
   const envelope = hullMetersFromStore(
@@ -122,11 +142,18 @@ function refitLoadedModel(api: SceneApi): void {
     envelope,
     state.modelLengthAxis,
     state.plan.gridHeight,
+    {
+      referenceModelMode: state.baseFootprintM !== null,
+      upAxis: state.modelUpAxis,
+    },
   )
 
-  useHullStore.getState().setModelDepthExceedsEnvelope(fit.exceedsEnvelopeDepth)
-  useHullStore.getState().setProfileDepthFromModel(fit.fittedHeightM)
-  applyWrapperOffset(api)
+  state.applyAutoModelAlignment(fit.autoAlignmentOffset)
+  state.setModelDepthExceedsEnvelope(fit.exceedsEnvelopeDepth)
+  if (!state.baseFootprintM) {
+    state.setProfileDepthFromModel(fit.fittedHeightM)
+  }
+  applyWrapperTransform(api)
 }
 
 function frameScene(api: SceneApi): void {
@@ -185,6 +212,7 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
     const profileDepth = useHullStore((s) => s.profile.gridHeight)
     const modelLengthAxis = useHullStore((s) => s.modelLengthAxis)
     const modelAlignmentOffset = useHullStore((s) => s.modelAlignmentOffset)
+    const modelAlignmentRotation = useHullStore((s) => s.modelAlignmentRotation)
     const modelFitVersion = useHullStore((s) => s.modelFitVersion)
     const surfaceVoxels = useHullStore((s) => s.surfaceVoxels)
 
@@ -290,6 +318,7 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
         controls.dispose()
         renderer.dispose()
         clearLoadedModel(api)
+        useHullStore.getState().clearReferenceModel()
         disposeHullVisuals(hullVisuals)
         sceneRef.current = null
         if (renderer.domElement.parentElement === container) {
@@ -311,8 +340,8 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
     useEffect(() => {
       const api = sceneRef.current
       if (!api) return
-      applyWrapperOffset(api)
-    }, [modelAlignmentOffset, modelLengthAxis])
+      applyWrapperTransform(api)
+    }, [modelAlignmentOffset, modelAlignmentRotation, modelLengthAxis])
 
     useEffect(() => {
       const api = sceneRef.current
@@ -336,6 +365,7 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
       let cancelled = false
       const url = URL.createObjectURL(importFile)
 
+      useHullStore.getState().clearReferenceModel()
       onLoadStateChange?.('loading')
 
       loadGlbFromUrl(url)
@@ -343,12 +373,18 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
           URL.revokeObjectURL(url)
           if (cancelled || !sceneRef.current) return
 
-          const lengthAxis = detectModelLengthAxis(model)
-          const ratio = modelBeamToLengthRatio(model, lengthAxis)
+          const store = useHullStore.getState()
+          const { lengthAxis, footprint: baseFootprint } = captureBaseFootprintM(
+            model,
+            store.modelUpAxis,
+          )
+          const ratio =
+            baseFootprint.length > 1e-6 ? baseFootprint.beam / baseFootprint.length : 1
 
-          useHullStore.getState().resetModelAlignment()
-          useHullStore.getState().setModelLengthAxis(lengthAxis)
-          useHullStore.getState().setReferenceBeamToLengthRatio(ratio)
+          store.setBaseFootprintM(baseFootprint)
+          store.setModelLengthAxis(lengthAxis)
+          store.setReferenceBeamToLengthRatio(ratio)
+          store.syncReferenceModelEnvelope()
 
           mountLoadedModel(sceneRef.current, model)
 

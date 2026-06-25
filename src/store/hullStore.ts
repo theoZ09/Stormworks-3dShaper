@@ -27,8 +27,17 @@ import {
   syncLengthAcrossViews,
 } from '../lib/grid/stormworksDimensions'
 import type {
+  FootprintMeters,
   ModelAlignmentOffset,
+  ModelAlignmentRotation,
   ModelLengthAxis,
+} from '../lib/model3d/hullAlignment'
+import {
+  profileDepthBlocksFromBaseFootprint,
+  DEFAULT_MODEL_UP_AXIS,
+  type ModelUpAxis,
+  ZERO_ALIGNMENT_OFFSET,
+  ZERO_ALIGNMENT_ROTATION,
 } from '../lib/model3d/hullAlignment'
 import { BLOCK_SIZE_M } from '../lib/grid/stormworksDimensions'
 import type { StormworksVoxel } from '../lib/stormworks/exportXml'
@@ -64,7 +73,12 @@ interface HullState {
   beamParity: BeamParity
   referenceBeamToLengthRatio: number
   modelLengthAxis: ModelLengthAxis
+  modelUpAxis: ModelUpAxis
   modelAlignmentOffset: ModelAlignmentOffset
+  autoModelAlignmentOffset: ModelAlignmentOffset
+  modelAlignmentRotation: ModelAlignmentRotation
+  autoModelAlignmentRotation: ModelAlignmentRotation
+  baseFootprintM: FootprintMeters | null
   modelFitVersion: number
   modelDepthExceedsEnvelope: boolean
   surfaceVoxels: StormworksVoxel[]
@@ -78,8 +92,14 @@ interface HullState {
   setStormworksLength: (blocks: number) => void
   setReferenceBeamToLengthRatio: (ratio: number) => void
   setModelLengthAxis: (axis: ModelLengthAxis) => void
+  setModelUpAxis: (axis: ModelUpAxis) => void
   setModelAlignmentOffset: (partial: Partial<ModelAlignmentOffset>) => void
+  setModelAlignmentRotation: (partial: Partial<ModelAlignmentRotation>) => void
   resetModelAlignment: () => void
+  setBaseFootprintM: (footprint: FootprintMeters | null) => void
+  syncReferenceModelEnvelope: () => void
+  applyAutoModelAlignment: (offset: ModelAlignmentOffset) => void
+  clearReferenceModel: () => void
   setModelDepthExceedsEnvelope: (exceeds: boolean) => void
   setProfileDepthFromModel: (heightM: number) => boolean
   setSurfaceVoxels: (voxels: StormworksVoxel[]) => void
@@ -238,7 +258,12 @@ export const useHullStore = create<HullState>()(
       beamParity: 'even' as BeamParity,
       referenceBeamToLengthRatio: DEFAULT_BEAM_TO_LENGTH_RATIO,
       modelLengthAxis: 'z' as ModelLengthAxis,
+      modelUpAxis: DEFAULT_MODEL_UP_AXIS,
       modelAlignmentOffset: { length: 0, beam: 0, up: 0 },
+      autoModelAlignmentOffset: { length: 0, beam: 0, up: 0 },
+      modelAlignmentRotation: { ...ZERO_ALIGNMENT_ROTATION },
+      autoModelAlignmentRotation: { ...ZERO_ALIGNMENT_ROTATION },
+      baseFootprintM: null,
       modelFitVersion: 0,
       modelDepthExceedsEnvelope: false,
       surfaceVoxels: [],
@@ -319,13 +344,20 @@ export const useHullStore = create<HullState>()(
           }
 
           if (lengthChanged) {
+            let profileHeight = profile.gridHeight
+            if (state.baseFootprintM && Object.keys(profile.blocks).length === 0) {
+              profileHeight = clampGridDim(
+                profileDepthBlocksFromBaseFootprint(state.baseFootprintM, newH),
+              )
+            }
             next = {
               ...next,
               profile: {
                 ...profile,
                 ...pushUndo(profile),
                 gridWidth: newH,
-                blocks: filterBlocksToGrid(profile.blocks, newH, profile.gridHeight),
+                gridHeight: profileHeight,
+                blocks: filterBlocksToGrid(profile.blocks, newH, profileHeight),
               },
             }
           }
@@ -373,10 +405,19 @@ export const useHullStore = create<HullState>()(
           state.referenceBeamToLengthRatio,
           state.beamParity,
         )
+
+        let profileHeight = state.profile.gridHeight
+        if (state.baseFootprintM && Object.keys(state.profile.blocks).length === 0) {
+          profileHeight = clampGridDim(
+            profileDepthBlocksFromBaseFootprint(state.baseFootprintM, planHeight),
+          )
+        }
+
         if (
           planHeight === state.plan.gridHeight &&
           profileWidth === state.profile.gridWidth &&
-          newW === state.plan.gridWidth
+          newW === state.plan.gridWidth &&
+          profileHeight === state.profile.gridHeight
         ) {
           return
         }
@@ -391,7 +432,8 @@ export const useHullStore = create<HullState>()(
           profile: {
             ...state.profile,
             gridWidth: profileWidth,
-            blocks: filterBlocksToGrid(state.profile.blocks, profileWidth, state.profile.gridHeight),
+            gridHeight: profileHeight,
+            blocks: filterBlocksToGrid(state.profile.blocks, profileWidth, profileHeight),
           },
         })
       },
@@ -421,16 +463,90 @@ export const useHullStore = create<HullState>()(
         set({ modelLengthAxis: axis, modelFitVersion: get().modelFitVersion + 1 })
       },
 
+      setModelUpAxis: (axis) => {
+        if (get().modelUpAxis === axis) return
+        set({ modelUpAxis: axis, modelFitVersion: get().modelFitVersion + 1 })
+      },
+
       setModelAlignmentOffset: (partial) => {
         set({
           modelAlignmentOffset: { ...get().modelAlignmentOffset, ...partial },
         })
       },
 
-      resetModelAlignment: () => {
+      setModelAlignmentRotation: (partial) => {
         set({
-          modelAlignmentOffset: { length: 0, beam: 0, up: 0 },
+          modelAlignmentRotation: { ...get().modelAlignmentRotation, ...partial },
+        })
+      },
+
+      resetModelAlignment: () => {
+        const auto = get().autoModelAlignmentOffset
+        const autoRot = get().autoModelAlignmentRotation
+        set({
+          modelAlignmentOffset: { ...auto },
+          modelAlignmentRotation: { ...autoRot },
           modelFitVersion: get().modelFitVersion + 1,
+        })
+      },
+
+      setBaseFootprintM: (footprint) => {
+        set({ baseFootprintM: footprint })
+      },
+
+      syncReferenceModelEnvelope: () => {
+        const state = get()
+        if (!state.baseFootprintM || Object.keys(state.profile.blocks).length > 0) return
+
+        const lengthBlocks = state.plan.gridHeight
+        const profileHeight = clampGridDim(
+          profileDepthBlocksFromBaseFootprint(state.baseFootprintM, lengthBlocks),
+        )
+        const planBeam = beamBlocksFromLength(
+          lengthBlocks,
+          state.referenceBeamToLengthRatio,
+          state.beamParity,
+        )
+
+        if (
+          profileHeight === state.profile.gridHeight &&
+          planBeam === state.plan.gridWidth &&
+          lengthBlocks === state.profile.gridWidth
+        ) {
+          return
+        }
+
+        set({
+          plan: {
+            ...state.plan,
+            gridWidth: planBeam,
+            blocks: filterBlocksToGrid(state.plan.blocks, planBeam, lengthBlocks),
+          },
+          profile: {
+            ...state.profile,
+            gridWidth: lengthBlocks,
+            gridHeight: profileHeight,
+            blocks: filterBlocksToGrid(state.profile.blocks, lengthBlocks, profileHeight),
+          },
+        })
+      },
+
+      applyAutoModelAlignment: (offset) => {
+        set({
+          autoModelAlignmentOffset: { ...offset },
+          modelAlignmentOffset: { ...offset },
+        })
+      },
+
+      clearReferenceModel: () => {
+        set({
+          baseFootprintM: null,
+          autoModelAlignmentOffset: { ...ZERO_ALIGNMENT_OFFSET },
+          modelAlignmentOffset: { ...ZERO_ALIGNMENT_OFFSET },
+          autoModelAlignmentRotation: { ...ZERO_ALIGNMENT_ROTATION },
+          modelAlignmentRotation: { ...ZERO_ALIGNMENT_ROTATION },
+          modelUpAxis: DEFAULT_MODEL_UP_AXIS,
+          modelDepthExceedsEnvelope: false,
         })
       },
 
@@ -440,8 +556,9 @@ export const useHullStore = create<HullState>()(
       },
 
       setProfileDepthFromModel: (heightM) => {
-        const { profile } = get()
+        const { profile, baseFootprintM } = get()
         if (Object.keys(profile.blocks).length > 0) return false
+        if (baseFootprintM) return false
         const blocks = clampGridDim(Math.ceil(heightM / BLOCK_SIZE_M))
         if (blocks === profile.gridHeight) return true
         set({
@@ -577,18 +694,35 @@ export const useHullStore = create<HullState>()(
             p.modelLengthAxis === 'x' || p.modelLengthAxis === 'z'
               ? (p.modelLengthAxis as ModelLengthAxis)
               : 'z'
+          const modelUpAxis =
+            p.modelUpAxis === '+y' ||
+            p.modelUpAxis === '-y' ||
+            p.modelUpAxis === '+x' ||
+            p.modelUpAxis === '-x' ||
+            p.modelUpAxis === '+z' ||
+            p.modelUpAxis === '-z'
+              ? (p.modelUpAxis as ModelUpAxis)
+              : DEFAULT_MODEL_UP_AXIS
           const modelAlignmentOffset =
             p.modelAlignmentOffset &&
             typeof p.modelAlignmentOffset === 'object' &&
             typeof (p.modelAlignmentOffset as ModelAlignmentOffset).length === 'number'
               ? (p.modelAlignmentOffset as ModelAlignmentOffset)
               : { length: 0, beam: 0, up: 0 }
+          const modelAlignmentRotation =
+            p.modelAlignmentRotation &&
+            typeof p.modelAlignmentRotation === 'object' &&
+            typeof (p.modelAlignmentRotation as ModelAlignmentRotation).x === 'number'
+              ? (p.modelAlignmentRotation as ModelAlignmentRotation)
+              : { ...ZERO_ALIGNMENT_ROTATION }
           return {
             ...current,
             beamParity,
             referenceBeamToLengthRatio,
             modelLengthAxis,
+            modelUpAxis,
             modelAlignmentOffset,
+            modelAlignmentRotation,
             modelFitVersion: 0,
             modelDepthExceedsEnvelope: false,
             plan: {
@@ -633,7 +767,9 @@ export const useHullStore = create<HullState>()(
         beamParity: state.beamParity,
         referenceBeamToLengthRatio: state.referenceBeamToLengthRatio,
         modelLengthAxis: state.modelLengthAxis,
+        modelUpAxis: state.modelUpAxis,
         modelAlignmentOffset: state.modelAlignmentOffset,
+        modelAlignmentRotation: state.modelAlignmentRotation,
         plan: {
           gridWidth: state.plan.gridWidth,
           gridHeight: state.plan.gridHeight,

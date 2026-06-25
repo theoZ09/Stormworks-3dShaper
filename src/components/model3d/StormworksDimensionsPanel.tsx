@@ -1,11 +1,18 @@
 import { useState } from 'react'
 import { BLOCK_SIZE_M, beamParityLabel, formatMetersFromBlocks } from '../../lib/grid/stormworksDimensions'
-import type { ModelAlignmentOffset } from '../../lib/model3d/hullAlignment'
+import {
+  alignmentOffsetToWorld,
+  MODEL_UP_AXIS_OPTIONS,
+  type ModelAlignmentOffset,
+  worldToAlignmentOffset,
+} from '../../lib/model3d/hullAlignment'
 import { downloadVehicleXml, type StormworksVoxel } from '../../lib/stormworks/exportXml'
 import { GridDimensionInput } from '../grid/GridDimensionInput'
+import { NumericFieldInput } from './NumericFieldInput'
 import { useHullStore } from '../../store/hullStore'
 
 const OFFSET_STEP = BLOCK_SIZE_M
+const ROTATION_STEP = 1
 
 function BeamParityOption({
   parity,
@@ -34,37 +41,29 @@ function BeamParityOption({
   )
 }
 
-function OffsetControl({
+function AxisRow({
   label,
   value,
-  onChange,
+  onCommit,
+  step,
+  suffix,
 }: {
   label: string
   value: number
-  onChange: (next: number) => void
+  onCommit: (n: number) => void
+  step: number
+  suffix?: string
 }) {
-  const format = (n: number) => (n % 1 === 0 ? `${n}` : n.toFixed(2))
-
   return (
-    <div className="flex items-center gap-1">
-      <span className="w-14 shrink-0 text-[10px] text-text-muted">{label}</span>
-      <button
-        type="button"
-        onClick={() => onChange(value - OFFSET_STEP)}
-        className="w-7 rounded-sm border border-border-subtle px-1 py-0.5 text-xs text-text-muted hover:border-border hover:text-text"
-        aria-label={`Decrease ${label}`}
-      >
-        −
-      </button>
-      <span className="w-12 text-center text-[10px] text-text">{format(value)} m</span>
-      <button
-        type="button"
-        onClick={() => onChange(value + OFFSET_STEP)}
-        className="w-7 rounded-sm border border-border-subtle px-1 py-0.5 text-xs text-text-muted hover:border-border hover:text-text"
-        aria-label={`Increase ${label}`}
-      >
-        +
-      </button>
+    <div className="flex items-center gap-2">
+      <span className="w-4 shrink-0 text-[10px] font-medium text-text-muted">{label}</span>
+      <NumericFieldInput
+        value={value}
+        onCommit={onCommit}
+        step={step}
+        suffix={suffix}
+        className="w-full"
+      />
     </div>
   )
 }
@@ -82,10 +81,15 @@ export function StormworksDimensionsPanel({
   const planGridHeight = useHullStore((s) => s.plan.gridHeight)
   const beamParity = useHullStore((s) => s.beamParity)
   const modelAlignmentOffset = useHullStore((s) => s.modelAlignmentOffset)
+  const modelAlignmentRotation = useHullStore((s) => s.modelAlignmentRotation)
+  const modelLengthAxis = useHullStore((s) => s.modelLengthAxis)
+  const modelUpAxis = useHullStore((s) => s.modelUpAxis)
   const modelDepthExceedsEnvelope = useHullStore((s) => s.modelDepthExceedsEnvelope)
   const profileHasBlocks = useHullStore((s) => Object.keys(s.profile.blocks).length > 0)
   const setStormworksLength = useHullStore((s) => s.setStormworksLength)
   const setBeamParity = useHullStore((s) => s.setBeamParity)
+  const setModelAlignmentRotation = useHullStore((s) => s.setModelAlignmentRotation)
+  const setModelUpAxis = useHullStore((s) => s.setModelUpAxis)
   const setModelAlignmentOffset = useHullStore((s) => s.setModelAlignmentOffset)
   const resetModelAlignment = useHullStore((s) => s.resetModelAlignment)
   const beginStroke = useHullStore((s) => s.beginStroke)
@@ -99,6 +103,20 @@ export function StormworksDimensionsPanel({
     setModelAlignmentOffset(partial)
     setSurfaceVoxels([])
     setExportError(null)
+  }
+
+  const patchRotation = (partial: Partial<typeof modelAlignmentRotation>) => {
+    setModelAlignmentRotation(partial)
+    setSurfaceVoxels([])
+    setExportError(null)
+  }
+
+  const worldPos = alignmentOffsetToWorld(modelAlignmentOffset, modelLengthAxis)
+
+  const patchWorldPosition = (axis: 'x' | 'y' | 'z', value: number) => {
+    const next = { x: worldPos.x, y: worldPos.y, z: worldPos.z }
+    next[axis] = value
+    patchOffset(worldToAlignmentOffset(next.x, next.y, next.z, modelLengthAxis))
   }
 
   const handlePreview = () => {
@@ -194,23 +212,76 @@ export function StormworksDimensionsPanel({
             Model alignment
           </p>
           <p className="mb-2 text-[10px] leading-snug text-text-muted">
-            Auto-placement after import. Fine-tune if the model was not centered correctly.
+            Choose which side of the imported model faces up (keel plane at Y=0).
+          </p>
+          <label className="mb-2 flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-text-muted">Floor / up axis</span>
+            <select
+              value={modelUpAxis}
+              onChange={(e) => {
+                setModelUpAxis(e.target.value as typeof modelUpAxis)
+                setSurfaceVoxels([])
+                setExportError(null)
+              }}
+              className="rounded-sm border border-border-subtle bg-surface-inset px-2 py-1.5 text-xs text-text"
+            >
+              {MODEL_UP_AXIS_OPTIONS.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mb-2 text-[10px] leading-snug text-text-muted">
+            Position and rotation in scene XYZ (meters / degrees). Type values or use ±.
+          </p>
+          <p className="mb-2 text-[10px] text-text-muted">
+            {modelLengthAxis === 'z' ? 'X = beam · Y = up · Z = length' : 'X = length · Y = up · Z = beam'}
           </p>
           <div className="flex flex-col gap-1.5">
-            <OffsetControl
-              label="Fore/aft"
-              value={modelAlignmentOffset.length}
-              onChange={(length) => patchOffset({ length })}
+            <p className="text-[10px] font-medium text-text-muted">Position</p>
+            <AxisRow
+              label="X"
+              value={worldPos.x}
+              step={OFFSET_STEP}
+              suffix="m"
+              onCommit={(x) => patchWorldPosition('x', x)}
             />
-            <OffsetControl
-              label="Beam"
-              value={modelAlignmentOffset.beam}
-              onChange={(beam) => patchOffset({ beam })}
+            <AxisRow
+              label="Y"
+              value={worldPos.y}
+              step={OFFSET_STEP}
+              suffix="m"
+              onCommit={(y) => patchWorldPosition('y', y)}
             />
-            <OffsetControl
-              label="Up"
-              value={modelAlignmentOffset.up}
-              onChange={(up) => patchOffset({ up })}
+            <AxisRow
+              label="Z"
+              value={worldPos.z}
+              step={OFFSET_STEP}
+              suffix="m"
+              onCommit={(z) => patchWorldPosition('z', z)}
+            />
+            <p className="mt-1 text-[10px] font-medium text-text-muted">Rotation</p>
+            <AxisRow
+              label="X"
+              value={modelAlignmentRotation.x}
+              step={ROTATION_STEP}
+              suffix="°"
+              onCommit={(x) => patchRotation({ x })}
+            />
+            <AxisRow
+              label="Y"
+              value={modelAlignmentRotation.y}
+              step={ROTATION_STEP}
+              suffix="°"
+              onCommit={(y) => patchRotation({ y })}
+            />
+            <AxisRow
+              label="Z"
+              value={modelAlignmentRotation.z}
+              step={ROTATION_STEP}
+              suffix="°"
+              onCommit={(z) => patchRotation({ z })}
             />
           </div>
           <button

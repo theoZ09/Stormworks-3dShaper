@@ -7,7 +7,7 @@ const STEP_LABELS = {
 } as const
 
 const MODES: { id: AppMode; label: string }[] = [
-  { id: 'grid', label: 'Grid' },
+  { id: 'grid', label: 'Grid (WIP)' },
   { id: 'model3d', label: '3D reference' },
 ]
 

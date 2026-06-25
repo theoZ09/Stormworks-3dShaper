@@ -54,7 +54,7 @@ export const useUIStore = create<UIState>()(
   persist(
     (set, get) => ({
       theme: 'dark',
-      appMode: 'grid',
+      appMode: 'model3d',
       tool: 'cube',
       designStep: 'plan',
       wedgeRotation: 0,
@@ -137,7 +137,7 @@ export const useUIStore = create<UIState>()(
           merged.designStep = 'plan'
         }
         if (merged.appMode === undefined) {
-          merged.appMode = 'grid'
+          merged.appMode = 'model3d'
         }
         return merged
       },
