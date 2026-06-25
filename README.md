@@ -1,37 +1,37 @@
-# Skrovbyggaren
+# Hull Builder
 
-Stormworks-inspirerad skrovdesigner i planvy. Rita skrovets form på ett rutnät där varje cell motsvarar ett 0,25 m-block.
+Stormworks-inspired hull designer in plan view. Draw the hull shape on a grid where each cell is a 0.25 m block.
 
-## Starta
+## Getting started
 
 ```bash
 npm install
 npm run dev
 ```
 
-Öppna [http://localhost:5173](http://localhost:5173) — du hamnar direkt i designern.
+Open [http://localhost:5173](http://localhost:5173) — you land directly in the designer.
 
-## Funktioner
+## Features
 
-- **Kub** och **Wedge** (1×1, 1×2, 1×4) — alltid tillgängliga som verktyg
-- Wedges ritas som trianglar; långa wedges som en sammanhängande bit
-- **Symmetri** speglar över skrovets mittlinje (port/styrbord)
-- **Placering:** kuber målas med drag; wedges placeras med förhandsvisning (håll musknapp, släpp)
-- **Pan/zoom:** mittenmus eller Space+dra, scroll eller ±-knappar
-- **Ångra:** Ctrl+Z / Ctrl+Y
-- **Rotation:** R cyklar wedge-lutning/orientering
-- Inställningar och rutnät sparas i localStorage
+- **Cube** and **Wedge** (1×1, 1×2, 1×4) — always available as tools
+- Wedges are drawn as triangles; long wedges as a single continuous piece
+- **Symmetry** mirrors across the hull centerline (port/starboard)
+- **Placement:** cubes are painted with drag; wedges are placed with preview (hold mouse button, release)
+- **Pan/zoom:** middle mouse or Space+drag, scroll or ± buttons
+- **Undo:** Ctrl+Z / Ctrl+Y
+- **Rotation:** R cycles wedge tilt/orientation
+- Settings and grid are saved in localStorage
 
-## Tangenter
+## Keyboard shortcuts
 
-| Tangent | Åtgärd |
-|---------|--------|
-| `1` | Kub |
+| Key | Action |
+|-----|--------|
+| `1` | Cube |
 | `2` | Wedge |
-| `3` | Radera |
-| `R` | Rotera wedge |
-| Ctrl+Z | Ångra |
-| Ctrl+Y | Gör om |
+| `3` | Erase |
+| `R` | Rotate wedge |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
 
 ## Tech
 

@@ -327,8 +327,8 @@ export function drawGrid(options: DrawGridOptions) {
     symmetry,
     colors,
     preview,
-    lengthLabel = 'Längd',
-    breadthLabel = 'Bredd',
+    lengthLabel = 'Length',
+    breadthLabel = 'Beam',
     keelLengthExtent = null,
   } = options
 

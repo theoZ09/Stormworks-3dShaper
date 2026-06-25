@@ -36,7 +36,7 @@ export function cellCenterMeters(
 
 /**
  * Map grid indices to Stormworks vp (block steps).
- * Stormworks: X=tvärs, Y=upp, Z=längd — origo centrerat på mitt (längd + bredd).
+ * Stormworks: X=beam, Y=up, Z=length — origin centered on mid (length + beam).
  */
 export function gridIndexToStormworksVp(
   ix: number,

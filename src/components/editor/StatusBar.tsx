@@ -10,7 +10,7 @@ import { symmetryForStep, useUIStore } from '../../store/uiStore'
 
 const STEP_LABELS = {
   plan: 'Plan',
-  profile: 'Profil',
+  profile: 'Profile',
 } as const
 
 function toolLabel(
@@ -19,7 +19,7 @@ function toolLabel(
   wedgeFlip: boolean,
   wedgeLen: WedgeLen,
 ): string {
-  if (tool === 'cube') return 'Kub'
+  if (tool === 'cube') return 'Cube'
   if (tool === 'wedge') {
     const { dir } = wedgeDrawGeometry(wedgeLen, wedgeRotation)
     const tri = { ne: '↗', nw: '↖', se: '↘', sw: '↙' }[dir]
@@ -28,7 +28,7 @@ function toolLabel(
     const rot = WEDGE_ROTATION_LABELS[wedgeRotation]
     return `Wedge ${WEDGE_LEN_LABELS[wedgeLen]} · ${rot} ${tri}${flipLabel}`
   }
-  return 'Radera'
+  return 'Erase'
 }
 
 export function StatusBar() {
@@ -47,24 +47,24 @@ export function StatusBar() {
   return (
     <footer className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-border bg-surface-elevated px-3 py-1.5 text-[11px] text-text-muted">
       <span>
-        Vy: <span className="text-text">{STEP_LABELS[designStep]}</span>
+        View: <span className="text-text">{STEP_LABELS[designStep]}</span>
       </span>
       <span>
-        Skrov:{' '}
+        Hull:{' '}
         <span className="text-text">
           {planLength} × {planBeam} block ({beamParityLabel(beamParity)}) ·{' '}
           {formatMetersFromBlocks(planLength)}
         </span>
       </span>
       <span>
-        Verktyg:{' '}
+        Tool:{' '}
         <span className="text-text">{toolLabel(tool, wedgeRotation, wedgeFlip, wedgeLen)}</span>
       </span>
       <span>
-        Symmetri: <span className="text-text">{symmetry ? 'På' : 'Av'}</span>
+        Symmetry: <span className="text-text">{symmetry ? 'On' : 'Off'}</span>
       </span>
       <span className="hidden sm:inline">
-        1 Kub · 2 Wedge · 3 Radera · R Rotera · Ctrl+Z Ångra
+        1 Cube · 2 Wedge · 3 Erase · R Rotate · Ctrl+Z Undo
       </span>
     </footer>
   )

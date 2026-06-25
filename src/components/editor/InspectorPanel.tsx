@@ -14,14 +14,14 @@ export function InspectorPanel() {
           onClick={() => setTab('properties')}
           className={`inspector-tab ${tab === 'properties' ? 'inspector-tab-active' : ''}`}
         >
-          Egenskaper
+          Properties
         </button>
         <button
           type="button"
           onClick={() => setTab('continue')}
           className={`inspector-tab ${tab === 'continue' ? 'inspector-tab-active' : ''}`}
         >
-          Fortsätt
+          Continue
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">

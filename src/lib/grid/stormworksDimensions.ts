@@ -56,7 +56,7 @@ export function nearestWithParity(
 }
 
 export function beamParityLabel(parity: BeamParity): string {
-  return parity === 'odd' ? 'udda bredd' : 'jämn bredd'
+  return parity === 'odd' ? 'odd beam' : 'even beam'
 }
 
 export interface LengthSyncPatch {

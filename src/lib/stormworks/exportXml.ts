@@ -33,7 +33,7 @@ export function buildVehicleXml(voxels: StormworksVoxel[]): string {
   )
 }
 
-export function downloadVehicleXml(voxels: StormworksVoxel[], filename = 'skrov-export.xml'): void {
+export function downloadVehicleXml(voxels: StormworksVoxel[], filename = 'hull-export.xml'): void {
   const xml = buildVehicleXml(voxels)
   const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' })
   const url = URL.createObjectURL(blob)

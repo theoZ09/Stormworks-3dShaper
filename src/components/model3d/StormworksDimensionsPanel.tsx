@@ -52,7 +52,7 @@ function OffsetControl({
         type="button"
         onClick={() => onChange(value - OFFSET_STEP)}
         className="w-7 rounded-sm border border-border-subtle px-1 py-0.5 text-xs text-text-muted hover:border-border hover:text-text"
-        aria-label={`Minska ${label}`}
+        aria-label={`Decrease ${label}`}
       >
         −
       </button>
@@ -61,7 +61,7 @@ function OffsetControl({
         type="button"
         onClick={() => onChange(value + OFFSET_STEP)}
         className="w-7 rounded-sm border border-border-subtle px-1 py-0.5 text-xs text-text-muted hover:border-border hover:text-text"
-        aria-label={`Öka ${label}`}
+        aria-label={`Increase ${label}`}
       >
         +
       </button>
@@ -108,7 +108,7 @@ export function StormworksDimensionsPanel({
     try {
       const voxels = onExportXml()
       if (!voxels || voxels.length === 0) {
-        setExportError('Inga ytvoxlar hittades. Justera modell eller mått.')
+        setExportError('No surface voxels found. Adjust model or dimensions.')
         setSurfaceVoxels([])
         return
       }
@@ -127,11 +127,11 @@ export function StormworksDimensionsPanel({
     <>
       <section>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Stormworks-mått
+          Stormworks dimensions
         </p>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <label className="w-12 shrink-0 text-text-muted">Längd</label>
+            <label className="w-12 shrink-0 text-text-muted">Length</label>
             <GridDimensionInput
               value={planGridHeight}
               onCommit={(length) => {
@@ -148,21 +148,21 @@ export function StormworksDimensionsPanel({
           </p>
 
           <p className="text-[10px] text-text">
-            Bredd: {planGridWidth} block ({beamParityLabel(beamParity)})
+            Beam: {planGridWidth} blocks ({beamParityLabel(beamParity)})
           </p>
           <p className="text-[10px] leading-snug text-text-muted">
-            Bredden beräknas från längd och referensmodellens proportioner.
+            Beam is calculated from length and reference model proportions.
           </p>
           <p className="text-[10px] text-text-muted">
-            Modell och rutnät skalas till Stormworks-längd (0,25 m/block).
+            Model and grid scale to Stormworks length (0.25 m/block).
           </p>
 
-          <p className="mt-1 text-[10px] text-text-muted">Symmetri</p>
+          <p className="mt-1 text-[10px] text-text-muted">Symmetry</p>
           <div className="flex gap-1">
             <BeamParityOption
               parity="odd"
               current={beamParity}
-              label="Udda"
+              label="Odd"
               onSelect={(parity) => {
                 beginStroke('plan')
                 setBeamParity(parity)
@@ -173,7 +173,7 @@ export function StormworksDimensionsPanel({
             <BeamParityOption
               parity="even"
               current={beamParity}
-              label="Jämn"
+              label="Even"
               onSelect={(parity) => {
                 beginStroke('plan')
                 setBeamParity(parity)
@@ -183,7 +183,7 @@ export function StormworksDimensionsPanel({
             />
           </div>
           <p className="text-[10px] leading-snug text-text-muted">
-            Udda = block på mittlinjen. Jämn = symmetri mellan två mittblock.
+            Odd = block on centerline. Even = symmetry between two center blocks.
           </p>
         </div>
       </section>
@@ -191,24 +191,24 @@ export function StormworksDimensionsPanel({
       {hasModel && (
         <section className="border-t border-border-subtle pt-3">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-            Modelljustering
+            Model alignment
           </p>
           <p className="mb-2 text-[10px] leading-snug text-text-muted">
-            Auto-placering efter import. Finjustera om modellen inte centrerats rätt.
+            Auto-placement after import. Fine-tune if the model was not centered correctly.
           </p>
           <div className="flex flex-col gap-1.5">
             <OffsetControl
-              label="För/akter"
+              label="Fore/aft"
               value={modelAlignmentOffset.length}
               onChange={(length) => patchOffset({ length })}
             />
             <OffsetControl
-              label="Tvärs"
+              label="Beam"
               value={modelAlignmentOffset.beam}
               onChange={(beam) => patchOffset({ beam })}
             />
             <OffsetControl
-              label="Upp"
+              label="Up"
               value={modelAlignmentOffset.up}
               onChange={(up) => patchOffset({ up })}
             />
@@ -222,11 +222,11 @@ export function StormworksDimensionsPanel({
             }}
             className="mt-3 w-full rounded-sm border border-border-subtle px-2 py-1.5 text-xs text-text-muted transition-colors hover:border-border hover:text-text"
           >
-            Återställ auto-fit
+            Reset auto-fit
           </button>
           {modelDepthExceedsEnvelope && profileHasBlocks && (
             <p className="mt-2 text-[10px] text-amber-600" role="status">
-              Modellen är högre än profil-rutnätet. Öka djup i profil-vyn eller återställ profil.
+              Model is taller than the profile grid. Increase depth in profile view or reset profile.
             </p>
           )}
         </section>
@@ -238,8 +238,8 @@ export function StormworksDimensionsPanel({
             Stormworks-export
           </p>
           <p className="mb-2 text-[10px] leading-snug text-text-muted">
-            Förhandsgranska ytvoxlar (0,25 m kuber) i 3D-vyn innan du laddar ner XML. Hela
-            skrovet — båda sidor.
+            Preview surface voxels (0.25 m cubes) in the 3D view before downloading XML. Full
+            hull — both sides.
           </p>
           <button
             type="button"
@@ -247,19 +247,19 @@ export function StormworksDimensionsPanel({
             disabled={previewing}
             className="w-full rounded-sm border border-accent bg-accent/10 px-2 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20 disabled:cursor-wait disabled:opacity-60"
           >
-            {previewing ? 'Voxeliserar…' : 'Förhandsgranska'}
+            {previewing ? 'Voxelizing…' : 'Preview'}
           </button>
           {surfaceVoxels.length > 0 && (
             <>
               <p className="mt-2 text-[10px] text-text-muted" role="status">
-                {surfaceVoxels.length} ytvoxlar visas i 3D-vyn. Bekräfta att det ser rätt ut.
+                {surfaceVoxels.length} surface voxels shown in the 3D view. Confirm it looks correct.
               </p>
               <button
                 type="button"
                 onClick={handleDownload}
                 className="mt-2 w-full rounded-sm bg-accent px-2 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
               >
-                Ladda ner XML
+                Download XML
               </button>
             </>
           )}

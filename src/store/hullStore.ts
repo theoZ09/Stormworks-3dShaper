@@ -557,7 +557,7 @@ export const useHullStore = create<HullState>()(
       },
     }),
     {
-      name: 'skrovbyggaren-hull',
+      name: 'hull-builder-hull',
       merge: (persisted, current) => {
         if (!persisted || typeof persisted !== 'object') return current
         const p = persisted as Record<string, unknown>

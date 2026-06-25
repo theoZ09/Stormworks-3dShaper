@@ -102,7 +102,7 @@ export const useUIStore = create<UIState>()(
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
     }),
     {
-      name: 'skrovbyggaren-ui',
+      name: 'hull-builder-ui',
       merge: (persistedState, currentState) => {
         if (!persistedState || typeof persistedState !== 'object') {
           return currentState

@@ -40,15 +40,15 @@ export function ToolStrip() {
   const setTool = useUIStore((s) => s.setTool)
 
   const items = [
-    { id: 'cube' as const, label: 'Kub', shortcut: '1', icon: <CubeIcon /> },
+    { id: 'cube' as const, label: 'Cube', shortcut: '1', icon: <CubeIcon /> },
     { id: 'wedge' as const, label: 'Wedge', shortcut: '2', icon: <WedgeIcon /> },
-    { id: 'erase' as const, label: 'Radera', shortcut: '3', icon: <EraseIcon /> },
+    { id: 'erase' as const, label: 'Erase', shortcut: '3', icon: <EraseIcon /> },
   ]
 
   return (
     <aside className="flex w-36 shrink-0 flex-col border-r border-border bg-surface-panel">
-      <div className="panel-header">Verktyg</div>
-      <nav className="flex flex-col gap-0.5 p-2" aria-label="Verktyg">
+      <div className="panel-header">Tools</div>
+      <nav className="flex flex-col gap-0.5 p-2" aria-label="Tools">
         {items.map((item) => (
           <button
             key={item.id}

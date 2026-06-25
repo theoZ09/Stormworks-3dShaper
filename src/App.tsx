@@ -19,7 +19,7 @@ export default function App() {
         <Suspense
           fallback={
             <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-text-muted">
-              Laddar 3D-vy…
+              Loading 3D view…
             </div>
           }
         >

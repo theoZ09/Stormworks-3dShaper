@@ -18,7 +18,7 @@ export function Model3DPage() {
 
   const handleLoadStateChange = useCallback((state: Model3DLoadState, message?: string) => {
     setLoadState(state)
-    setErrorMessage(state === 'error' ? (message ?? 'Okänt fel') : null)
+    setErrorMessage(state === 'error' ? (message ?? 'Unknown error') : null)
   }, [])
 
   const openFilePicker = () => inputRef.current?.click()
@@ -29,7 +29,7 @@ export function Model3DPage() {
 
     const lower = file.name.toLowerCase()
     if (!lower.endsWith('.glb') && !lower.endsWith('.gltf')) {
-      setErrorMessage('Välj en .glb- eller .gltf-fil')
+      setErrorMessage('Choose a .glb or .gltf file')
       setLoadState('error')
       return
     }
@@ -62,12 +62,12 @@ export function Model3DPage() {
           disabled={isLoading}
           className="rounded-sm bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
         >
-          {isLoading ? 'Laddar modell…' : 'Importera GLB'}
+          {isLoading ? 'Loading model…' : 'Import GLB'}
         </button>
 
         {fileName && loadState === 'loaded' && (
           <span className="text-xs text-text-muted">
-            Inläst: <span className="text-text">{fileName}</span>
+            Loaded: <span className="text-text">{fileName}</span>
           </span>
         )}
 
@@ -78,7 +78,7 @@ export function Model3DPage() {
         )}
 
         <span className="ml-auto hidden text-[11px] text-text-muted sm:inline">
-          Rotera: vänsterdrag · Zoom: scroll · Panorera: högerdrag
+          Rotate: left-drag · Zoom: scroll · Pan: right-drag
         </span>
       </div>
 
@@ -94,10 +94,10 @@ export function Model3DPage() {
           {!fileName && loadState !== 'loading' && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
               <div className="max-w-sm rounded-sm border border-border-subtle bg-surface-elevated/95 px-4 py-3 text-center shadow-sm backdrop-blur-sm">
-                <p className="text-sm text-text">Ingen modell inläst</p>
+                <p className="text-sm text-text">No model loaded</p>
                 <p className="mt-1 text-xs text-text-muted">
-                  Klicka <strong className="text-text">Importera GLB</strong> ovan, eller ange
-                  Stormworks-mått i panelen till höger
+                  Click <strong className="text-text">Import GLB</strong> above, or set
+                  Stormworks dimensions in the panel on the right
                 </p>
               </div>
             </div>
@@ -112,7 +112,7 @@ export function Model3DPage() {
 
           <section className="border-t border-border-subtle pt-3">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-              Referensmodell
+              Reference model
             </p>
             <button
               type="button"
@@ -120,11 +120,11 @@ export function Model3DPage() {
               disabled={isLoading}
               className="w-full rounded-sm border border-accent bg-accent/10 px-2 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20 disabled:opacity-60"
             >
-              {isLoading ? 'Laddar…' : 'Importera GLB…'}
+              {isLoading ? 'Loading…' : 'Import GLB…'}
             </button>
             <ul className="mt-2 list-inside list-disc space-y-1 text-[10px] text-text-muted">
-              <li>GLB eller glTF (.glb rekommenderas)</li>
-              <li>Modellen centreras automatiskt</li>
+              <li>GLB or glTF (.glb recommended)</li>
+              <li>Model is centered automatically</li>
             </ul>
           </section>
         </aside>

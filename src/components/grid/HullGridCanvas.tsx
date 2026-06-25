@@ -21,8 +21,8 @@ const MIN_SCALE = 0.4
 const MAX_SCALE = 3
 
 const AXIS_LABELS: Record<HullView, { length: string; breadth: string }> = {
-  plan: { length: 'Längd', breadth: 'Bredd' },
-  profile: { length: 'Längd', breadth: 'Djup' },
+  plan: { length: 'Length', breadth: 'Beam' },
+  profile: { length: 'Length', breadth: 'Depth' },
 }
 
 export function HullGridCanvas() {
@@ -400,7 +400,7 @@ export function HullGridCanvas() {
       <div className="absolute bottom-3 right-3 flex gap-1">
         <button
           type="button"
-          aria-label="Zooma ut"
+          aria-label="Zoom out"
           onClick={() => setScale((s) => Math.max(MIN_SCALE, s - 0.2))}
           className="flex h-8 w-8 items-center justify-center rounded-sm border border-border-subtle bg-surface-elevated text-sm text-text-muted hover:border-border hover:text-text"
         >
@@ -408,7 +408,7 @@ export function HullGridCanvas() {
         </button>
         <button
           type="button"
-          aria-label="Zooma in"
+          aria-label="Zoom in"
           onClick={() => setScale((s) => Math.min(MAX_SCALE, s + 0.2))}
           className="flex h-8 w-8 items-center justify-center rounded-sm border border-border-subtle bg-surface-elevated text-sm text-text-muted hover:border-border hover:text-text"
         >
@@ -416,11 +416,11 @@ export function HullGridCanvas() {
         </button>
         <button
           type="button"
-          aria-label="Centrera rutnät"
+          aria-label="Center grid"
           onClick={centerGrid}
           className="flex h-8 items-center justify-center rounded-sm border border-border-subtle bg-surface-elevated px-2 text-xs text-text-muted hover:border-border hover:text-text"
         >
-          Centrera
+          Center
         </button>
       </div>
     </div>

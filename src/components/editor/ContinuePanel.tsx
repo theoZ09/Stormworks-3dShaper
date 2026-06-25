@@ -10,13 +10,13 @@ const CONTINUE_OPTIONS: {
   {
     id: 'plan',
     label: 'Plan',
-    desc: 'Rita skrovets form ovanifrån',
+    desc: 'Draw hull shape from above',
     available: true,
   },
   {
     id: 'profile',
-    label: 'Profil',
-    desc: 'Sidovy — längd och djup',
+    label: 'Profile',
+    desc: 'Side view — length and depth',
     available: true,
   },
 ]
@@ -28,7 +28,7 @@ export function ContinuePanel() {
   return (
     <div className="flex flex-col gap-2 p-3">
       <p className="text-xs text-text-muted">
-        Välj vy i skrovbyggaren. Plan och profil har varsin ritning.
+        Choose a view in the hull builder. Plan and profile each have their own drawing.
       </p>
       {CONTINUE_OPTIONS.map((opt) => (
         <button
@@ -43,7 +43,7 @@ export function ContinuePanel() {
           <span className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-medium text-text">{opt.label}</span>
             {designStep === opt.id && (
-              <span className="text-[9px] uppercase tracking-wide text-accent">Aktiv</span>
+              <span className="text-[9px] uppercase tracking-wide text-accent">Active</span>
             )}
           </span>
           <span className="mt-0.5 block text-[10px] text-text-muted">{opt.desc}</span>

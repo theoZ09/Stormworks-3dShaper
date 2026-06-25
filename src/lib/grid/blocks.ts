@@ -319,7 +319,7 @@ export function wedgeDrawGeometry(
 }
 
 export function blockLabel(block: Block): string {
-  if (block.kind === 'cube') return 'Kub'
+  if (block.kind === 'cube') return 'Cube'
   const len = block.len ?? 1
   const rotation = wedgeRotationOf(block)
   const flip = wedgeFlipOf(block)

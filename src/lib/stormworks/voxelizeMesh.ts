@@ -174,7 +174,7 @@ function fillSurfaceGaps(
 }
 
 /**
- * Voxelize mesh **shell** (ytterhölje) at fixed cell size inside Stormworks envelope.
+ * Voxelize mesh **shell** at fixed cell size inside Stormworks envelope.
  *
  * Method:
  * 1. Iterate every cell; mark if cell AABB intersects any mesh triangle (world space).

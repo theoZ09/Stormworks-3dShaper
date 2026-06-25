@@ -56,8 +56,8 @@ export function PropertiesInspector() {
   const clearBlocks = () => clearBlocksRaw(view)
   const beginStroke = () => beginStrokeRaw(view)
 
-  const widthLabel = designStep === 'plan' ? 'Bredd' : 'Längd'
-  const heightLabel = designStep === 'plan' ? 'Längd' : 'Djup'
+  const widthLabel = designStep === 'plan' ? 'Beam' : 'Length'
+  const heightLabel = designStep === 'plan' ? 'Length' : 'Depth'
 
   const theme = useUIStore((s) => s.theme)
   const tool = useUIStore((s) => s.tool)
@@ -83,7 +83,7 @@ export function PropertiesInspector() {
     <div className="flex flex-col gap-4 p-3 text-xs">
       <section>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Rutnät
+          Grid
         </p>
         <div className="flex items-center gap-2">
           <label className="text-text-muted">{widthLabel}</label>
@@ -112,28 +112,28 @@ export function PropertiesInspector() {
             }}
           />
         </div>
-        <p className="mt-2 text-text-muted">Fyllda celler: {filledCount}</p>
+        <p className="mt-2 text-text-muted">Filled cells: {filledCount}</p>
       </section>
 
       <section>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Inställningar
+          Settings
         </p>
         <Toggle
-          label="Mörkt tema"
+          label="Dark theme"
           checked={theme === 'dark'}
           onChange={(on) => setTheme(on ? 'dark' : 'light')}
         />
-        <Toggle label="Symmetri" checked={symmetry} onChange={setSymmetry} />
-        <Toggle label="Rutnätslinjer" checked={showGridLines} onChange={setShowGridLines} />
-        <Toggle label="Meterlinjer" checked={showMeterLines} onChange={setShowMeterLines} />
+        <Toggle label="Symmetry" checked={symmetry} onChange={setSymmetry} />
+        <Toggle label="Grid lines" checked={showGridLines} onChange={setShowGridLines} />
+        <Toggle label="Meter lines" checked={showMeterLines} onChange={setShowMeterLines} />
       </section>
 
       <section>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
           Wedge
         </p>
-        <p className="mb-1 text-[10px] text-text-muted">Längd</p>
+        <p className="mb-1 text-[10px] text-text-muted">Length</p>
         <div className="grid grid-cols-3 gap-1">
           {WEDGE_LENS.map((len) => (
             <button
@@ -186,7 +186,7 @@ export function PropertiesInspector() {
           onClick={rotateWedge}
           className="mt-2 w-full rounded-sm border border-border-subtle px-2 py-1.5 text-xs text-text-muted transition-colors hover:border-border hover:text-text"
         >
-          ↻ Rotera (R) — {wedgeRotation + 1}/4
+          ↻ Rotate (R) — {wedgeRotation + 1}/4
         </button>
         <button
           type="button"
@@ -197,7 +197,7 @@ export function PropertiesInspector() {
               : 'border-border-subtle text-text-muted hover:border-border hover:text-text'
           }`}
         >
-          ⇄ Spegla triangel — {wedgeFlip ? 'på' : 'av'}
+          ⇄ Flip triangle — {wedgeFlip ? 'on' : 'off'}
         </button>
       </section>
 
@@ -210,7 +210,7 @@ export function PropertiesInspector() {
           }}
           className="w-full rounded-sm border border-border-subtle px-2 py-1.5 text-xs text-text-muted transition-colors hover:border-red-400 hover:text-red-500"
         >
-          Rensa rutnät
+          Clear grid
         </button>
       </section>
     </div>

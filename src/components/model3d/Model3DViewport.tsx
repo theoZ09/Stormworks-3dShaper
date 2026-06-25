@@ -367,7 +367,7 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
         .catch((err: unknown) => {
           URL.revokeObjectURL(url)
           if (cancelled) return
-          const message = err instanceof Error ? err.message : 'Kunde inte ladda modellen'
+          const message = err instanceof Error ? err.message : 'Could not load model'
           onLoadStateChange?.('error', message)
         })
 
@@ -381,7 +381,7 @@ export const Model3DViewport = forwardRef<Model3DViewportHandle, Model3DViewport
       <div
         ref={containerRef}
         className={`h-full w-full overflow-hidden bg-surface-inset ${className}`}
-        aria-label="3D-referensvy"
+        aria-label="3D reference view"
       />
     )
   },
